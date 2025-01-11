@@ -1,4 +1,4 @@
-package appentities;
+package app.appentities;
 
 public enum StandardOfLiving {
     VERY_HIGH,

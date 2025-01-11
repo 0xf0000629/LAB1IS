@@ -1,4 +1,4 @@
-package appentities;
+package app.appentities;
 
 public enum Climate {
     RAIN_FOREST,

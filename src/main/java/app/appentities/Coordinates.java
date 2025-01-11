@@ -1,4 +1,4 @@
-package appentities;
+package app.appentities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
