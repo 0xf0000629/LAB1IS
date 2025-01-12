@@ -19,13 +19,13 @@ public class CityController {
         this.cityDAO = new CityDAO(); // Instantiate the DAO
     }
 
-    // Get all cities
+    // GET ALL OF EM
     @GetMapping
     public List<City> getAllCities() {
         return cityDAO.getAllCities();
     }
 
-    // Get a city by ID
+    // GET
     @GetMapping("/{id}")
     public City getCityById(@PathVariable Long id) {
         City city = cityDAO.getCityById(id);
@@ -35,7 +35,7 @@ public class CityController {
         return city;
     }
 
-    // Add a new city
+    // ADD
     @PostMapping
     public City addCity(@RequestBody City city) {
 
@@ -50,7 +50,7 @@ public class CityController {
         return city;
     }
 
-    // Update an existing city
+    // UPDATE
     @PutMapping("/{id}")
     public City updateCity(@PathVariable Long id, @RequestBody City updatedCity) {
         City city = cityDAO.getCityById(id);
@@ -58,7 +58,6 @@ public class CityController {
             throw new RuntimeException("City not found with id: " + id);
         }
 
-        // Update city fields
         city.setName(updatedCity.getName());
         city.setArea(updatedCity.getArea());
         city.setPopulation(updatedCity.getPopulation());
@@ -80,7 +79,7 @@ public class CityController {
         return city;
     }
 
-    // Delete a city
+    // DELETE
     @DeleteMapping("/{id}")
     public String deleteCity(@PathVariable Long id) {
         City city = cityDAO.getCityById(id);

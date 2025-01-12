@@ -8,9 +8,42 @@ import org.springframework.stereotype.Repository;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.List;
+
 @Repository
 public class CoordinatesDAO {
 
+    public List<Coordinates> getAllCoordinates() {
+        Transaction transaction = null;
+        List<Coordinates> coords = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            coords = session.createQuery("from Coordinates", Coordinates.class).list();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            e.printStackTrace();
+        }
+
+        return coords;
+    }
+
+    public Coordinates getCoordinatesById(Long id) {
+        Transaction transaction = null;
+        Coordinates coords = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            coords = session.get(Coordinates.class, id);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            e.printStackTrace();
+        }
+
+        return coords;
+    }
 
     public void saveCoordinates(Coordinates coords) {
         Session session = HibernateUtil.getSessionFactory().openSession();

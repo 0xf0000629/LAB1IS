@@ -19,5 +19,6 @@
         <mapping class="app.appentities.City"/>
         <mapping class="app.appentities.Coordinates"/>
         <mapping class="app.appentities.Human"/>
+        <mapping class="app.appentities.Users"/>
     </session-factory>
 </hibernate-configuration>
