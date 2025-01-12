@@ -3,12 +3,15 @@ package app.controller;
 import app.appDAO.CityDAO;
 import app.appDAO.UserDAO;
 import app.appentities.City;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.server.ResponseStatusException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import app.appentities.Users;
 
@@ -23,7 +26,7 @@ import static app.SecurityUtil.hashPassword;
 @RequestMapping("/api/auth")
 public class LoginController {
 
-    private static final String SECRET_KEY = "killingmyselfpostponed"; // Replace with a secure key
+    private static final String SECRET_KEY = "thebigwitchdoyouthinkbigenderpeopleedgetheirpronouns"; // Replace with a secure key
 
     private final UserDAO userDAO;
 
@@ -34,6 +37,27 @@ public class LoginController {
     @GetMapping
     public List<Users> getAllUsers() {
         return userDAO.getAllUser();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Users> getUserByUsername(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            // Extract the token from the header
+            String token = authorizationHeader.substring(7);
+            String username = extractUsername(token);
+            Users user = userDAO.findByUsername(username);
+
+            if (user == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "who the hell are you");
+            }
+
+            return ResponseEntity.ok(user);
+        }
+        else{
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "request issues");
+        }
     }
 
     @PostMapping("/login")
@@ -94,4 +118,16 @@ public class LoginController {
                 .compact();
     }
 
+    public static String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+    public static <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+    private static Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .build().parseSignedClaims(token).getPayload();
+    }
 }

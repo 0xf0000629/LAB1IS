@@ -19,7 +19,7 @@ public class UserDAO {
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            user = session.createQuery("from User", Users.class).list();
+            user = session.createQuery("from Users", Users.class).list();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -44,6 +44,24 @@ public class UserDAO {
 
         return user;
     }
+    public Users findByUsername(String username) {
+        Transaction transaction = null;
+        Users user = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            String hql = "FROM Users WHERE username = :username";
+            user = session.createQuery(hql, Users.class)
+                    .setParameter("username", username)
+                    .uniqueResult();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            e.printStackTrace();
+        }
+
+        return user;
+    }
 
     public boolean confirm(String username, String password) {
         Transaction transaction = null;
@@ -51,7 +69,7 @@ public class UserDAO {
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            String hql = "FROM User WHERE username = :username";
+            String hql = "FROM Users WHERE username = :username";
             user = session.createQuery(hql, Users.class)
                     .setParameter("username", username)
                     .uniqueResult();

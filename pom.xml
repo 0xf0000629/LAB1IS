@@ -64,13 +64,17 @@
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
-      <version>0.12.0</version>
+      <version>0.12.2</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
-      <version>0.12.0</version>
-      <scope>runtime</scope>
+      <version>0.12.2</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-orgjson</artifactId>
+      <version>0.12.2</version>
     </dependency>
 
   </dependencies>
