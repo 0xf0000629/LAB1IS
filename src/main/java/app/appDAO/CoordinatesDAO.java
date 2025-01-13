@@ -29,7 +29,7 @@ public class CoordinatesDAO {
         return coords;
     }
 
-    public Coordinates getCoordinatesById(Long id) {
+    public static Coordinates getCoordinatesById(Long id) {
         Transaction transaction = null;
         Coordinates coords = null;
 
@@ -45,7 +45,7 @@ public class CoordinatesDAO {
         return coords;
     }
 
-    public void saveCoordinates(Coordinates coords) {
+    public static void saveCoordinates(Coordinates coords) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(coords);

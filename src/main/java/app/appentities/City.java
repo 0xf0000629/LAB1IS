@@ -14,8 +14,11 @@ public class City {
     private long id; //Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     private String name; //Поле не может быть null, Строка не может быть пустой
     @OneToOne
+    @JoinColumn(name = "coordinates_id")
     private Coordinates coordinates; //Поле не может быть null
     private java.time.LocalDateTime creation_date; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
+
+    private String created_by;
     private Integer area; //Значение поля должно быть больше 0, Поле не может быть null
     private Long population; //Значение поля должно быть больше 0, Поле не может быть null
     private java.time.ZonedDateTime establishment_date;
@@ -54,6 +57,14 @@ public class City {
 
     public void setCreation_date(LocalDateTime creation_date) {
         this.creation_date = creation_date;
+    }
+
+    public String getCreated_by() {
+        return created_by;
+    }
+
+    public void setCreated_by(String created_by) {
+        this.created_by = created_by;
     }
 
     public Integer getArea() {

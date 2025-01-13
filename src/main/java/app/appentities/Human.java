@@ -16,6 +16,13 @@ public class Human {
     private long age; //Значение поля должно быть больше 0
     private int height; //Значение поля должно быть больше 0
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

@@ -30,7 +30,7 @@ public class HumanDAO {
         return humans;
     }
 
-    public Human getHumanById(Long id) {
+    public static Human getHumanById(Long id) {
         Transaction transaction = null;
         Human human = null;
 

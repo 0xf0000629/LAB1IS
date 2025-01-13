@@ -79,6 +79,24 @@ public class LoginController {
         }
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            // Extract the token from the header
+            String token = authorizationHeader.substring(7);
+            String username = extractUsername(token);
+            System.out.println(username + " logged out");
+
+            Map<String, String> response = new HashMap<>();
+            return ResponseEntity.ok(response);
+        }
+        else{
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "request issues");
+        }
+    }
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@RequestBody Users user) {
         String username = user.getUsername();

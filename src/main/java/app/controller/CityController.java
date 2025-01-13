@@ -2,7 +2,11 @@ package app.controller;
 
 import app.HibernateUtil;
 import app.appDAO.CityDAO;
+import app.appDAO.CoordinatesDAO;
+import app.appDAO.HumanDAO;
 import app.appentities.City;
+import app.appentities.Coordinates;
+import app.appentities.Human;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +31,8 @@ public class CityController {
 
     // GET
     @GetMapping("/{id}")
-    public City getCityById(@PathVariable Long id) {
+    public City getCityById(@PathVariable("id") Long id) {
+        System.out.println("tryna show the city rn");
         City city = cityDAO.getCityById(id);
         if (city == null) {
             throw new RuntimeException("City not found with id: " + id); // Handle this better with proper exception handling
@@ -39,6 +44,19 @@ public class CityController {
     @PostMapping
     public City addCity(@RequestBody City city) {
 
+        Coordinates coordinates = new Coordinates();
+        coordinates.setX(city.getCoordinates().getX());
+        coordinates.setY(city.getCoordinates().getY());
+        CoordinatesDAO.saveCoordinates(coordinates);
+        city.setCoordinates(coordinates); // Associate coordinates
+
+        // Reuse existing governor if ID is provided
+        if (city.getGovernor() != null && city.getGovernor().getId() != null) {
+            Human governor = HumanDAO
+                    .getHumanById(city.getGovernor().getId());
+            city.setGovernor(governor);
+        }
+
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.save(city);
@@ -46,13 +64,12 @@ public class CityController {
         } catch (Exception e) {
             throw new RuntimeException("Error saving city: " + e.getMessage());
         }
-
         return city;
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public City updateCity(@PathVariable Long id, @RequestBody City updatedCity) {
+    public City updateCity(@PathVariable("id") Long id, @RequestBody City updatedCity) {
         City city = cityDAO.getCityById(id);
         if (city == null) {
             throw new RuntimeException("City not found with id: " + id);
@@ -81,7 +98,7 @@ public class CityController {
 
     // DELETE
     @DeleteMapping("/{id}")
-    public String deleteCity(@PathVariable Long id) {
+    public String deleteCity(@PathVariable("id") Long id) {
         City city = cityDAO.getCityById(id);
         if (city == null) {
             throw new RuntimeException("City not found with id: " + id);

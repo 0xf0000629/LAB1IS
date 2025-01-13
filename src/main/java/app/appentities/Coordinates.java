@@ -15,6 +15,14 @@ public class Coordinates {
     private Double x; //Значение поля должно быть больше -625, Поле не может быть null
     private Long y; //Поле не может быть null
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Double getX() {
         return x;
     }
