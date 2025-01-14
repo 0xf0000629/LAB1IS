@@ -52,7 +52,7 @@ public class HumanController {
 
     // UPDATE
     @PutMapping("/{id}")
-    public Human updateHuman(@PathVariable Long id, @RequestBody Human updatedHuman) {
+    public Human updateHuman(@PathVariable("id") Long id, @RequestBody Human updatedHuman) {
         Human human = humanDAO.getHumanById(id);
         if (human == null) {
             throw new RuntimeException("Human not found with id: " + id);
@@ -75,7 +75,7 @@ public class HumanController {
 
     // DELETE
     @DeleteMapping("/{id}")
-    public String deleteHuman(@PathVariable Long id) {
+    public String deleteHuman(@PathVariable("id") Long id) {
         Human human = humanDAO.getHumanById(id);
         if (human == null) {
             throw new RuntimeException("Human not found with id: " + id);

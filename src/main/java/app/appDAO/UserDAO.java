@@ -29,7 +29,7 @@ public class UserDAO {
         return user;
     }
 
-    public Users getUserById(Long id) {
+    public static Users getUserById(Long id) {
         Transaction transaction = null;
         Users user = null;
 

@@ -1,10 +1,14 @@
 package app.controller;
 
+import app.HibernateUtil;
 import app.appDAO.CityDAO;
 import app.appDAO.UserDAO;
 import app.appentities.City;
+import app.appentities.Human;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -126,8 +130,28 @@ public class LoginController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{id}")
+    public Users makeAdmin(@PathVariable("id") Long id) {
+        Users user = UserDAO.getUserById(id);
+        if (user == null) {
+            throw new RuntimeException("User not found with id: " + id);
+        }
+
+        user.setCool(true);
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.update(user);
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RuntimeException("Error promoting: " + e.getMessage());
+        }
+
+        return user;
+    }
+
     private String generateJwtToken(String username) {
-        long expirationTime = 1000 * 60 * 60; // 1 hour in milliseconds
+        long expirationTime = 10000 * 60 * 60; // 1 hour in milliseconds
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())

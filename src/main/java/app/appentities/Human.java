@@ -16,6 +16,8 @@ public class Human {
     private long age; //Значение поля должно быть больше 0
     private int height; //Значение поля должно быть больше 0
 
+    private String added_by;
+
     public Long getId() {
         return id;
     }
@@ -46,5 +48,13 @@ public class Human {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public String getAdded_by() {
+        return added_by;
+    }
+
+    public void setAdded_by(String added_by) {
+        this.added_by = added_by;
     }
 }

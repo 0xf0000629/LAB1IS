@@ -78,6 +78,7 @@ public class CityController {
         city.setName(updatedCity.getName());
         city.setArea(updatedCity.getArea());
         city.setPopulation(updatedCity.getPopulation());
+        city.setEstablishment_date(updatedCity.getEstablishment_date());
         city.setCapital(updatedCity.isCapital());
         city.setMeters_above_sea_level(updatedCity.getMeters_above_sea_level());
         city.setCar_code(updatedCity.getCar_code());
@@ -114,4 +115,31 @@ public class CityController {
 
         return "City with id " + id + " has been deleted.";
     }
+
+    @GetMapping("/avrgMASL")
+    public Double getavrgMASL() {
+        return CityDAO.getavrgMASL();
+    }
+    @GetMapping("/minSOL")
+    public List<String> getCitiesWithSOL(@RequestParam("minSOL") String minSOL) {
+        System.out.println("GOT " + minSOL);
+        return CityDAO.getCitiesWithSOL(minSOL);
+    }
+    @GetMapping("/uniqueC")
+    public List<String> getCitiesWithStandardOfLivingAbove() {
+        return CityDAO.getCitiesWithClimate();
+    }
+
+    @GetMapping("/toanother")
+    public void toanother(@RequestParam("id1") int id1, @RequestParam("id2") int id2) {
+        System.out.println("GOT " + id1 + " " + id2);
+        CityDAO.transfertoanother(id1, id2);
+    }
+
+    @GetMapping("/tosmallest")
+    public void tosmallest(@RequestParam("id1") int id1) {
+        System.out.println("GOT " + id1);
+        CityDAO.transfertosmallest(id1);
+    }
+
 }
