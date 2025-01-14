@@ -44,7 +44,7 @@ public class UserDAO {
 
         return user;
     }
-    public Users findByUsername(String username) {
+    public static Users findByUsername(String username) {
         Transaction transaction = null;
         Users user = null;
 

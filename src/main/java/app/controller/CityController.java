@@ -1,17 +1,22 @@
 package app.controller;
 
 import app.HibernateUtil;
-import app.appDAO.CityDAO;
-import app.appDAO.CoordinatesDAO;
-import app.appDAO.HumanDAO;
+import app.appDAO.*;
 import app.appentities.City;
 import app.appentities.Coordinates;
 import app.appentities.Human;
+import app.appentities.Users;
+import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static app.controller.LoginController.extractUsername;
 
 @RestController
 @RequestMapping("/api/cities")
@@ -42,7 +47,7 @@ public class CityController {
 
     // ADD
     @PostMapping
-    public City addCity(@RequestBody City city) {
+    public City addCity(HttpServletRequest request, @RequestBody City city) {
 
         Coordinates coordinates = new Coordinates();
         coordinates.setX(city.getCoordinates().getX());
@@ -60,6 +65,7 @@ public class CityController {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.save(city);
+            LogDAO.savelog(getUsername(request),"ADDED",city.getName());
             transaction.commit();
         } catch (Exception e) {
             throw new RuntimeException("Error saving city: " + e.getMessage());
@@ -69,7 +75,7 @@ public class CityController {
 
     // UPDATE
     @PutMapping("/{id}")
-    public City updateCity(@PathVariable("id") Long id, @RequestBody City updatedCity) {
+    public City updateCity(HttpServletRequest request, @PathVariable("id") Long id, @RequestBody City updatedCity) {
         City city = cityDAO.getCityById(id);
         if (city == null) {
             throw new RuntimeException("City not found with id: " + id);
@@ -89,6 +95,7 @@ public class CityController {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.update(city);
+            LogDAO.savelog(getUsername(request),"UPDATED",city.getName());
             transaction.commit();
         } catch (Exception e) {
             throw new RuntimeException("Error updating city: " + e.getMessage());
@@ -99,7 +106,7 @@ public class CityController {
 
     // DELETE
     @DeleteMapping("/{id}")
-    public String deleteCity(@PathVariable("id") Long id) {
+    public String deleteCity(HttpServletRequest request, @PathVariable("id") Long id) {
         City city = cityDAO.getCityById(id);
         if (city == null) {
             throw new RuntimeException("City not found with id: " + id);
@@ -108,12 +115,27 @@ public class CityController {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.delete(city);
+            LogDAO.savelog(getUsername(request),"DELETED",city.getName());
             transaction.commit();
         } catch (Exception e) {
             throw new RuntimeException("Error deleting city: " + e.getMessage());
         }
 
         return "City with id " + id + " has been deleted.";
+    }
+
+    public String getUsername(HttpServletRequest request){
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            // Extract the token from the header
+            String token = authorizationHeader.substring(7);
+            String username = extractUsername(token);
+
+            return username;
+        }
+        else
+            return "<unknown>";
     }
 
     @GetMapping("/avrgMASL")

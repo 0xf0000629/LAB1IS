@@ -109,8 +109,11 @@ public class CityDAO {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            String hql = "SELECT SELECT transfertoanother("+ String.valueOf(id1) + ", " + String.valueOf(id2) + ")";
-            session.createQuery(hql, String.class).list();
+            String sql = "CALL transfertoanother(:id1, :id2)";
+            session.createNativeQuery(sql)
+                    .setParameter("id1", id1)
+                    .setParameter("id2", id2)
+                    .executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,8 +125,10 @@ public class CityDAO {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            String hql = "SELECT SELECT transfertosmallest("+ String.valueOf(id1) + ")";
-            session.createQuery(hql, String.class).list();
+            String sql = "CALL transfertosmallest(:id1)";
+            session.createNativeQuery(sql)
+                    .setParameter("id1", id1)
+                    .executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
