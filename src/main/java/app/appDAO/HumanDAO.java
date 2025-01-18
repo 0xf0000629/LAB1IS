@@ -3,6 +3,7 @@ package app.appDAO;
 
 import app.HibernateUtil;
 import app.appentities.Human;
+import app.appentities.Users;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -37,6 +38,25 @@ public class HumanDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             human = session.get(Human.class, id);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            e.printStackTrace();
+        }
+
+        return human;
+    }
+
+    public static Human getHumanByName(String name) {
+        Transaction transaction = null;
+        Human human = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            String hql = "FROM Human WHERE name = :name";
+            human = session.createQuery(hql, Human.class)
+                    .setParameter("name", name)
+                    .uniqueResult();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();

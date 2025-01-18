@@ -15,9 +15,10 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 System.out.println("OH YEAH CORS ALLOWED");
                 registry.addMapping("/**") // Allow all endpoints
+                        //.allowedOrigins("https://se.ifmo.ru") // Replace with allowed domain(s)
                         .allowedOrigins("http://localhost:3000") // Replace with allowed domain(s)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow specific HTTP methods
-                        .allowedHeaders("*") // Allow all headers
+                        .allowedHeaders("*") // Allow all sheaders
                         .allowCredentials(true); // Allow cookies or credentials
             }
         };

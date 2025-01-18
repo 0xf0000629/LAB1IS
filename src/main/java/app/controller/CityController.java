@@ -2,10 +2,7 @@ package app.controller;
 
 import app.HibernateUtil;
 import app.appDAO.*;
-import app.appentities.City;
-import app.appentities.Coordinates;
-import app.appentities.Human;
-import app.appentities.Users;
+import app.appentities.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -14,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static app.controller.LoginController.extractUsername;
 
@@ -164,4 +163,40 @@ public class CityController {
         CityDAO.transfertosmallest(id1);
     }
 
+    @PostMapping("/mass")
+    public ResponseEntity<String> massive(HttpServletRequest request, @RequestBody MyBigFatPayload payload){
+        List<City> cities = payload.getCities();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            Map<String, Human> govns = new HashMap<String,Human>();
+            for (int i=0;i<cities.size();i++) {
+                City city = cities.get(i);
+                Coordinates coordinates = new Coordinates();
+                coordinates.setX(city.getCoordinates().getX());
+                coordinates.setY(city.getCoordinates().getY());
+                CoordinatesDAO.saveCoordinates(coordinates);
+                city.setCoordinates(coordinates);
+
+                Human governor = govns.get(city.getGovernor().getName());
+                if (governor != null) {
+                    city.setGovernor(governor);
+                } else {
+                    governor = new Human();
+                    governor.setName(city.getGovernor().getName());
+                    governor.setAge(city.getGovernor().getAge());
+                    governor.setHeight(city.getGovernor().getHeight());
+                    session.save(governor);
+                    govns.put(governor.getName(), governor);
+                    city.setGovernor(governor);
+                }
+
+                session.save(city);
+            }
+            LogDAO.savelog(getUsername(request),"MASS ADDITION", ""+cities.size());
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving city: " + e.getMessage());
+        }
+        return ResponseEntity.ok("yeah epic");
+    }
 }
