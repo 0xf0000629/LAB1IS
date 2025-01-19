@@ -76,6 +76,7 @@ public class LoginController {
             // Prepare response
             Map<String, String> response = new HashMap<>();
             response.put("authToken", authToken);
+            System.out.println(user.getUsername() + "logged in");
 
             return ResponseEntity.ok(response);
         } else {

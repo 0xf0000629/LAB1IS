@@ -1,7 +1,10 @@
 package app.appDAO;
 
 import app.appentities.City;
+import app.appentities.Coordinates;
+import app.appentities.Human;
 import app.appentities.Users;
+import org.springframework.transaction.annotation.Transactional;
 import org.hibernate.SessionFactory;
 import app.HibernateUtil;
 import org.hibernate.query.NativeQuery;
@@ -10,10 +13,16 @@ import org.springframework.stereotype.Repository;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class CityDAO {
+
+    @Autowired
+    private SessionFactory sessionFactory;
 
     public List<City> getAllCities() {
         Transaction transaction = null;
@@ -47,7 +56,7 @@ public class CityDAO {
         return city;
     }
 
-    public void saveCity(City city) {
+    public static void saveCity(City city) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(city);
@@ -105,6 +114,26 @@ public class CityDAO {
         return cities;
     }
 
+    public static void reloadCarCodes(){
+        Transaction transaction = null;
+        List <Integer> carcodes = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            String hql = "SELECT car_code from city";
+            carcodes = session.createNativeQuery(hql, Integer.class).list();
+            System.out.println("Got car codes" + carcodes);
+            for (int i=0;i<carcodes.size();i++){
+                CarCodeEnforcer.setid(carcodes.get(i), true);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (transaction != null) transaction.rollback();
+        }
+        return;
+    }
+
     public static void transfertoanother(int id1, int id2){
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -133,6 +162,53 @@ public class CityDAO {
         } catch (Exception e) {
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
+        }
+    }
+
+    @Transactional
+    public List<Long> citiessaveALL(List<City> cities){
+        List<Long> cityids = new ArrayList<>();
+        Map<String, Human> govns = new HashMap<String,Human>();
+        Session session = sessionFactory.getCurrentSession();
+        Transaction ts = session.beginTransaction();
+        try {
+            for (int i = 0; i < cities.size(); i++) {
+                City city = cities.get(i);
+                if (CarCodeEnforcer.getArray(city.getCar_code().intValue())) {
+                    for (int j = 0; j < i; j++) {
+                        CarCodeEnforcer.setid(cities.get(j).getCar_code().intValue(), false);
+                    }
+                    throw new RuntimeException("this car code is already in use.");
+                }
+                Coordinates coordinates = new Coordinates();
+                coordinates.setX(city.getCoordinates().getX());
+                coordinates.setY(city.getCoordinates().getY());
+                session.save(coordinates);
+                city.setCoordinates(coordinates);
+
+                Human governor = govns.get(city.getGovernor().getName());
+                if (governor != null) {
+                    city.setGovernor(governor);
+                } else {
+                    governor = new Human();
+                    governor.setName(city.getGovernor().getName());
+                    governor.setAge(city.getGovernor().getAge());
+                    governor.setHeight(city.getGovernor().getHeight());
+                    session.save(governor);
+                    govns.put(governor.getName(), governor);
+                    city.setGovernor(governor);
+                }
+
+                session.save(city);
+                cityids.add(city.getId());
+                CarCodeEnforcer.setid(city.getCar_code().intValue(), true);
+            }
+            ts.commit();
+            return cityids;
+        }
+        catch (Exception e){
+            if (ts != null) ts.rollback();
+            throw new RuntimeException("Error adding cities: " + e.getMessage());
         }
     }
 

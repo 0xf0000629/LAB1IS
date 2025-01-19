@@ -22,9 +22,9 @@ public class City {
     private Integer area; //Значение поля должно быть больше 0, Поле не может быть null
     private Long population; //Значение поля должно быть больше 0, Поле не может быть null
     private java.time.ZonedDateTime establishment_date;
-    private boolean capital;
-    private int meters_above_sea_level;
-    private long car_code; //Значение поля должно быть больше 0, Максимальное значение поля: 1000
+    private Boolean capital;
+    private Integer meters_above_sea_level;
+    private Long car_code; //Значение поля должно быть больше 0, Максимальное значение поля: 1000
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
     private Climate climate; //Поле может быть null
@@ -91,7 +91,7 @@ public class City {
         this.establishment_date = establishment_date;
     }
 
-    public boolean isCapital() {
+    public Boolean isCapital() {
         return capital;
     }
 
@@ -99,7 +99,7 @@ public class City {
         this.capital = capital;
     }
 
-    public int getMeters_above_sea_level() {
+    public Integer getMeters_above_sea_level() {
         return meters_above_sea_level;
     }
 
@@ -107,7 +107,7 @@ public class City {
         this.meters_above_sea_level = meters_above_sea_level;
     }
 
-    public long getCar_code() {
+    public Long getCar_code() {
         return car_code;
     }
 

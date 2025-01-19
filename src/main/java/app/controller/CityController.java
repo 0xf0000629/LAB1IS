@@ -4,13 +4,16 @@ import app.HibernateUtil;
 import app.appDAO.*;
 import app.appentities.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +24,9 @@ import static app.controller.LoginController.extractUsername;
 @RequestMapping("/api/cities")
 public class CityController {
 
+    @Autowired
     private final CityDAO cityDAO;
+
 
     public CityController() {
         this.cityDAO = new CityDAO(); // Instantiate the DAO
@@ -48,23 +53,35 @@ public class CityController {
     @PostMapping
     public City addCity(HttpServletRequest request, @RequestBody City city) {
 
+        if (CarCodeEnforcer.getArray(city.getCar_code().intValue())){
+            throw new RuntimeException("Error saving city: this car code is already in use.");
+        }
         Coordinates coordinates = new Coordinates();
         coordinates.setX(city.getCoordinates().getX());
         coordinates.setY(city.getCoordinates().getY());
         CoordinatesDAO.saveCoordinates(coordinates);
         city.setCoordinates(coordinates); // Associate coordinates
 
-        // Reuse existing governor if ID is provided
-        if (city.getGovernor() != null && city.getGovernor().getId() != null) {
-            Human governor = HumanDAO
-                    .getHumanById(city.getGovernor().getId());
-            city.setGovernor(governor);
-        }
-
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
+            if (city.getGovernor() != null){
+                if (city.getGovernor().getId() != null) {
+                    Human governor = HumanDAO
+                            .getHumanById(city.getGovernor().getId());
+                    city.setGovernor(governor);
+                }
+                else {
+                    Human governor = new Human();
+                    governor.setName(city.getGovernor().getName());
+                    governor.setAge(city.getGovernor().getAge());
+                    governor.setHeight(city.getGovernor().getHeight());
+                    session.save(governor);
+                    city.setGovernor(governor);
+                }
+            }
             session.save(city);
             LogDAO.savelog(getUsername(request),"ADDED",city.getName());
+            CarCodeEnforcer.setid(city.getCar_code().intValue(), true);
             transaction.commit();
         } catch (Exception e) {
             throw new RuntimeException("Error saving city: " + e.getMessage());
@@ -80,21 +97,28 @@ public class CityController {
             throw new RuntimeException("City not found with id: " + id);
         }
 
-        city.setName(updatedCity.getName());
-        city.setArea(updatedCity.getArea());
-        city.setPopulation(updatedCity.getPopulation());
-        city.setEstablishment_date(updatedCity.getEstablishment_date());
-        city.setCapital(updatedCity.isCapital());
-        city.setMeters_above_sea_level(updatedCity.getMeters_above_sea_level());
-        city.setCar_code(updatedCity.getCar_code());
-        city.setClimate(updatedCity.getClimate());
-        city.setStandardOfLiving(updatedCity.getStandardOfLiving());
-        city.setGovernor(updatedCity.getGovernor());
+        if (updatedCity.getName() != null) city.setName(updatedCity.getName());
+        if (updatedCity.getArea() != null) city.setArea(updatedCity.getArea());
+        if (updatedCity.getPopulation() != null) city.setPopulation(updatedCity.getPopulation());
+        if (updatedCity.getEstablishment_date() != null) city.setEstablishment_date(updatedCity.getEstablishment_date());
+        if (updatedCity.isCapital() != null) city.setCapital(updatedCity.isCapital());
+        if (updatedCity.getMeters_above_sea_level() != null) city.setMeters_above_sea_level(updatedCity.getMeters_above_sea_level());
+        if (updatedCity.getCar_code() != null) {
+            if (CarCodeEnforcer.getArray(updatedCity.getCar_code().intValue())){
+                throw new RuntimeException("Error saving city: this car code is already in use.");
+            }
+            else
+                city.setCar_code(updatedCity.getCar_code());
+        }
+        if (updatedCity.getClimate() != null) city.setClimate(updatedCity.getClimate());
+        if (updatedCity.getStandardOfLiving() != null) city.setStandardOfLiving(updatedCity.getStandardOfLiving());
+        if (updatedCity.getGovernor() != null) city.setGovernor(updatedCity.getGovernor());
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.update(city);
             LogDAO.savelog(getUsername(request),"UPDATED",city.getName());
+            CarCodeEnforcer.setid(city.getCar_code().intValue(), true);
             transaction.commit();
         } catch (Exception e) {
             throw new RuntimeException("Error updating city: " + e.getMessage());
@@ -115,6 +139,7 @@ public class CityController {
             Transaction transaction = session.beginTransaction();
             session.delete(city);
             LogDAO.savelog(getUsername(request),"DELETED",city.getName());
+            CarCodeEnforcer.setid(city.getCar_code().intValue(),false);
             transaction.commit();
         } catch (Exception e) {
             throw new RuntimeException("Error deleting city: " + e.getMessage());
@@ -164,39 +189,12 @@ public class CityController {
     }
 
     @PostMapping("/mass")
-    public ResponseEntity<String> massive(HttpServletRequest request, @RequestBody MyBigFatPayload payload){
+    public ResponseEntity<Map<String, List <Long> >> massive(HttpServletRequest request, @RequestBody MyBigFatPayload payload){
         List<City> cities = payload.getCities();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            Map<String, Human> govns = new HashMap<String,Human>();
-            for (int i=0;i<cities.size();i++) {
-                City city = cities.get(i);
-                Coordinates coordinates = new Coordinates();
-                coordinates.setX(city.getCoordinates().getX());
-                coordinates.setY(city.getCoordinates().getY());
-                CoordinatesDAO.saveCoordinates(coordinates);
-                city.setCoordinates(coordinates);
-
-                Human governor = govns.get(city.getGovernor().getName());
-                if (governor != null) {
-                    city.setGovernor(governor);
-                } else {
-                    governor = new Human();
-                    governor.setName(city.getGovernor().getName());
-                    governor.setAge(city.getGovernor().getAge());
-                    governor.setHeight(city.getGovernor().getHeight());
-                    session.save(governor);
-                    govns.put(governor.getName(), governor);
-                    city.setGovernor(governor);
-                }
-
-                session.save(city);
-            }
-            LogDAO.savelog(getUsername(request),"MASS ADDITION", ""+cities.size());
-            transaction.commit();
-        } catch (Exception e) {
-            throw new RuntimeException("Error saving city: " + e.getMessage());
-        }
-        return ResponseEntity.ok("yeah epic");
+        List <Long> cityids = cityDAO.citiessaveALL(cities);
+        LogDAO.savelog(getUsername(request),"MASS ADDITION", ""+cities.size());
+        Map<String, List<Long> > response = new HashMap<>();
+        response.put("ids", cityids);
+        return ResponseEntity.ok(response);
     }
 }

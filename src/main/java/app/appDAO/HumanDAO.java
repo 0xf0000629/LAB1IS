@@ -4,6 +4,8 @@ package app.appDAO;
 import app.HibernateUtil;
 import app.appentities.Human;
 import app.appentities.Users;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -14,6 +16,9 @@ import java.util.List;
 
 @Repository
 public class HumanDAO {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<Human> getAllHumans() {
         Transaction transaction = null;
@@ -66,7 +71,7 @@ public class HumanDAO {
         return human;
     }
 
-    public void saveHuman(Human human) {
+    public static void saveHuman(Human human) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(human);
