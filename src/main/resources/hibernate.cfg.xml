@@ -22,5 +22,6 @@
         <mapping class="app.appentities.Coordinates"/>
         <mapping class="app.appentities.Human"/>
         <mapping class="app.appentities.Users"/>
+        <mapping class="app.appentities.Logs"/>
     </session-factory>
 </hibernate-configuration>

@@ -1,18 +1,20 @@
 package app.controller;
 
 import app.HibernateUtil;
+import app.MinioService;
 import app.appDAO.*;
 import app.appentities.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.transaction.annotation.Transactional;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +28,9 @@ public class CityController {
 
     @Autowired
     private final CityDAO cityDAO;
+
+    @Autowired
+    private MinioService minioService;
 
 
     public CityController() {
@@ -80,7 +85,13 @@ public class CityController {
                 }
             }
             session.save(city);
-            LogDAO.savelog(getUsername(request),"ADDED",city.getName());
+            Logs log = new Logs();
+            log.setUsername(getUsername(request));
+            log.setAction("ADDED");
+            log.setNameofentity(city.getName());
+            log.setLog_date(LocalDateTime.now());
+            log.setFilename("");
+            LogDAO.saveLog(log);
             CarCodeEnforcer.setid(city.getCar_code().intValue(), true);
             transaction.commit();
         } catch (Exception e) {
@@ -117,7 +128,13 @@ public class CityController {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.update(city);
-            LogDAO.savelog(getUsername(request),"UPDATED",city.getName());
+            Logs log = new Logs();
+            log.setUsername(getUsername(request));
+            log.setAction("UPDATED");
+            log.setNameofentity(city.getName());
+            log.setLog_date(LocalDateTime.now());
+            log.setFilename("");
+            LogDAO.saveLog(log);
             CarCodeEnforcer.setid(city.getCar_code().intValue(), true);
             transaction.commit();
         } catch (Exception e) {
@@ -138,7 +155,13 @@ public class CityController {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.delete(city);
-            LogDAO.savelog(getUsername(request),"DELETED",city.getName());
+            Logs log = new Logs();
+            log.setUsername(getUsername(request));
+            log.setAction("DELETED");
+            log.setNameofentity(city.getName());
+            log.setLog_date(LocalDateTime.now());
+            log.setFilename("");
+            LogDAO.saveLog(log);
             CarCodeEnforcer.setid(city.getCar_code().intValue(),false);
             transaction.commit();
         } catch (Exception e) {
@@ -189,12 +212,51 @@ public class CityController {
     }
 
     @PostMapping("/mass")
-    public ResponseEntity<Map<String, List <Long> >> massive(HttpServletRequest request, @RequestBody MyBigFatPayload payload){
-        List<City> cities = payload.getCities();
-        List <Long> cityids = cityDAO.citiessaveALL(cities);
-        LogDAO.savelog(getUsername(request),"MASS ADDITION", ""+cities.size());
-        Map<String, List<Long> > response = new HashMap<>();
-        response.put("ids", cityids);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Map<String, List <Long> >> massive(HttpServletRequest request, @RequestParam("file") MultipartFile file){
+        // request
+        try {
+            CityDAO.reloadCarCodes();
+            minioService.pingMinio();
+        }
+        catch (Exception e){
+            Map<String, List<Long> > response = new HashMap<>();
+            response.put("transaction", new ArrayList<>());
+            return ResponseEntity.status(500).body(response);
+        }
+        // commit
+        try {
+            String fileName = file.getOriginalFilename();
+            minioService.uploadFile(fileName, file.getInputStream(), file.getSize(), file.getContentType());
+        }
+        catch (Exception e){
+            Map<String, List<Long> > response = new HashMap<>();
+            response.put("file", new ArrayList<>());
+            return ResponseEntity.status(500).body(response);
+        }
+        try {
+            ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+            yamlMapper.findAndRegisterModules();
+            List<City> cities = yamlMapper.readValue(
+                    file.getInputStream(),
+                    yamlMapper.getTypeFactory().constructCollectionType(List.class, City.class)
+            );
+            List<Long> cityids = cityDAO.citiessaveALL(cities);
+            Logs log = new Logs();
+            log.setUsername(getUsername(request));
+            log.setAction("MASS ADDITION");
+            log.setNameofentity("" + cities.size());
+            log.setFilename(file.getOriginalFilename());
+            log.setLog_date(LocalDateTime.now());
+            LogDAO.saveLog(log);
+            Map<String, List<Long>> response = new HashMap<>();
+            response.put("ids", cityids);
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+            Map<String, List<Long> > response = new HashMap<>();
+            response.put("persist", new ArrayList<>());
+            return ResponseEntity.status(500).body(response);
+        }
     }
 }
