@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns="urn:infinispan:config:15.2">
+    <cache-container>
+        <local-cache name="CityRegion">
+            <memory max-count="2000"/>
+        </local-cache>
+
+        <local-cache name="HumanRegion">
+            <memory max-count="2000"/>
+        </local-cache>
+
+        <local-cache name="LogsRegion">
+            <memory max-count="2000"/>
+        </local-cache>
+    </cache-container>
+</infinispan>

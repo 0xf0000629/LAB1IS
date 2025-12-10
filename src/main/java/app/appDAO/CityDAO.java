@@ -3,7 +3,12 @@ package app.appDAO;
 import app.appentities.City;
 import app.appentities.Coordinates;
 import app.appentities.Human;
+import app.CacheMe;
 import app.appentities.Users;
+import jakarta.persistence.QueryHint;
+import org.hibernate.annotations.QueryHints;
+import org.hibernate.jpa.AvailableHints;
+import org.hibernate.stat.Statistics;
 import org.springframework.transaction.annotation.Transactional;
 import org.hibernate.SessionFactory;
 import app.HibernateUtil;
@@ -24,27 +29,29 @@ public class CityDAO {
     @Autowired
     private SessionFactory sessionFactory;
 
+    @CacheMe
+    @Transactional
     public List<City> getAllCities() {
         Transaction transaction = null;
         List<City> cities = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
-            cities = session.createQuery("from City", City.class).list();
+            cities = session.createQuery("from City", City.class).setHint(QueryHints.CACHEABLE, true).list();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             e.printStackTrace();
         }
-
         return cities;
     }
-
+    @CacheMe
+    @Transactional
     public City getCityById(Long id) {
         Transaction transaction = null;
         City city = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
             city = session.get(City.class, id);
             transaction.commit();
@@ -52,12 +59,13 @@ public class CityDAO {
             if (transaction != null) transaction.rollback();
             e.printStackTrace();
         }
-
         return city;
     }
 
-    public static void saveCity(City city) {
-        Session session = HibernateUtil.getSessionFactory().openSession();
+    @CacheMe
+    @Transactional
+    public void saveCity(City city) {
+        Session session = sessionFactory.getCurrentSession();
         Transaction transaction = session.beginTransaction();
         session.save(city);
         transaction.commit();
@@ -118,7 +126,7 @@ public class CityDAO {
         Transaction transaction = null;
         List <Integer> carcodes = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtil.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             String hql = "SELECT car_code from city";
             carcodes = session.createNativeQuery(hql, Integer.class).list();

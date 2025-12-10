@@ -1,32 +1,40 @@
 package app.appDAO;
 
 
+import app.CacheMe;
 import app.HibernateUtil;
 import app.appentities.Human;
 import app.appentities.Users;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.hibernate.SessionFactory;
+import org.hibernate.annotations.QueryHints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
 public class HumanDAO {
 
+    @Autowired
+    private SessionFactory sessionFactory;
+
     @PersistenceContext
     private EntityManager entityManager;
 
+    @CacheMe
+    @Transactional
     public List<Human> getAllHumans() {
         Transaction transaction = null;
         List<Human> humans = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
-            humans = session.createQuery("from Human", Human.class).list();
+            humans = session.createQuery("from Human", Human.class).setHint(QueryHints.CACHEABLE, true).list();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -35,12 +43,13 @@ public class HumanDAO {
 
         return humans;
     }
-
+    @CacheMe
+    @Transactional
     public static Human getHumanById(Long id) {
         Transaction transaction = null;
         Human human = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtil.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             human = session.get(Human.class, id);
             transaction.commit();
@@ -56,7 +65,7 @@ public class HumanDAO {
         Transaction transaction = null;
         Human human = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtil.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             String hql = "FROM Human WHERE name = :name";
             human = session.createQuery(hql, Human.class)
@@ -70,9 +79,10 @@ public class HumanDAO {
 
         return human;
     }
-
+    @CacheMe
+    @Transactional
     public static void saveHuman(Human human) {
-        Session session = HibernateUtil.getSessionFactory().openSession();
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction transaction = session.beginTransaction();
         session.save(human);
         transaction.commit();

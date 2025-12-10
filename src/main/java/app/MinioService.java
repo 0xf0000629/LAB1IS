@@ -43,23 +43,15 @@ public class MinioService {
         );
     }
 
-    public void pingMinio() {
-        try {
-            boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder()
+    public void pingMinio() throws Exception {
+        boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder()
+                .bucket(bucketName)
+                .build());
+
+        if (!bucketExists) {
+            minioClient.makeBucket(MakeBucketArgs.builder()
                     .bucket(bucketName)
                     .build());
-
-            if (!bucketExists) {
-                minioClient.makeBucket(MakeBucketArgs.builder()
-                        .bucket(bucketName)
-                        .build());
-                System.out.println("Bucket created: " + bucketName);
-            } else {
-                System.out.println("Bucket already exists: " + bucketName);
-            }
-        } catch (Exception e) {
-            System.err.println("Error testing MinIO connection: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }

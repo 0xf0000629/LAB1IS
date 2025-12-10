@@ -1,6 +1,8 @@
 package app.controller;
 
 import app.HibernateUtil;
+//import app.MinioService;
+//import app.MinioService;
 import app.MinioService;
 import app.appDAO.*;
 import app.appentities.*;
@@ -31,7 +33,6 @@ public class CityController {
 
     @Autowired
     private MinioService minioService;
-
 
     public CityController() {
         this.cityDAO = new CityDAO(); // Instantiate the DAO
@@ -214,13 +215,16 @@ public class CityController {
     @PostMapping("/mass")
     public ResponseEntity<Map<String, List <Long> >> massive(HttpServletRequest request, @RequestParam("file") MultipartFile file){
         // request
-        try {
-            CityDAO.reloadCarCodes();
-            minioService.pingMinio();
-        }
+        try {CityDAO.reloadCarCodes();}
         catch (Exception e){
             Map<String, List<Long> > response = new HashMap<>();
-            response.put("transaction", new ArrayList<>());
+            response.put("dbcon", new ArrayList<>());
+            return ResponseEntity.status(500).body(response);
+        }
+        try {minioService.pingMinio();}
+        catch (Exception e){
+            Map<String, List<Long> > response = new HashMap<>();
+            response.put("storagecon", new ArrayList<>());
             return ResponseEntity.status(500).body(response);
         }
         // commit
@@ -230,7 +234,7 @@ public class CityController {
         }
         catch (Exception e){
             Map<String, List<Long> > response = new HashMap<>();
-            response.put("file", new ArrayList<>());
+            response.put("storagedown", new ArrayList<>());
             return ResponseEntity.status(500).body(response);
         }
         try {
@@ -255,7 +259,7 @@ public class CityController {
         catch (Exception e) {
             System.out.println(e.getMessage());
             Map<String, List<Long> > response = new HashMap<>();
-            response.put("persist", new ArrayList<>());
+            response.put("dbdown", new ArrayList<>());
             return ResponseEntity.status(500).body(response);
         }
     }

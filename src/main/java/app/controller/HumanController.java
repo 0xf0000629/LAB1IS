@@ -5,6 +5,7 @@ import app.appDAO.HumanDAO;
 import app.appentities.Human;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,10 +14,11 @@ import java.util.List;
 @RequestMapping("/api/human")
 public class HumanController {
 
+    @Autowired
     private final HumanDAO humanDAO;
 
     public HumanController() {
-        this.humanDAO = new HumanDAO(); // Instantiate the DAO
+        this.humanDAO = new HumanDAO();
     }
 
     // GET ALL OF EM
@@ -27,10 +29,10 @@ public class HumanController {
 
     // GET
     @GetMapping("/{id}")
-    public Human getHumanById(@PathVariable Long id) {
+    public Human getHumanById(@PathVariable("id") Long id) {
         Human human = humanDAO.getHumanById(id);
         if (human == null) {
-            throw new RuntimeException("Human not found with id: " + id); // Handle this better with proper exception handling
+            throw new RuntimeException("Human not found with id: " + id);
         }
         return human;
     }

@@ -1,13 +1,20 @@
 package app.appentities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 @Entity
+@Cacheable
+@org.hibernate.annotations.Cache(
+        usage = CacheConcurrencyStrategy.READ_WRITE,
+        region = "CityRegion"
+)
 public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
