@@ -23,12 +23,12 @@ public class City {
     @OneToOne
     @JoinColumn(name = "coordinates_id")
     private Coordinates coordinates; //Поле не может быть null
-    private java.time.LocalDateTime creation_date; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
+    private LocalDateTime creation_date; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
 
     private String created_by;
     private Integer area; //Значение поля должно быть больше 0, Поле не может быть null
     private Long population; //Значение поля должно быть больше 0, Поле не может быть null
-    private java.time.ZonedDateTime establishment_date;
+    private ZonedDateTime establishment_date;
     private Boolean capital;
     private Integer meters_above_sea_level;
     private Long car_code; //Значение поля должно быть больше 0, Максимальное значение поля: 1000
@@ -40,6 +40,30 @@ public class City {
     private StandardOfLiving standardOfLiving; //Поле не может быть null
     @OneToOne
     private Human governor; //Поле не может быть null
+
+    public City() {
+        // this empty constructor is for JPA to not break
+    }
+
+    public City(long id, String name, Coordinates coords, LocalDateTime creation_date,
+                String created_by, Integer area, Long population, ZonedDateTime establishment_date,
+                Boolean capital, Integer meters_above_sea_level, Long car_code, Climate climate,
+                StandardOfLiving standardOfLiving, Human governor){
+        this.id = id;
+        this.name = name;
+        this.coordinates = coords;
+        this.creation_date = creation_date;
+        this.created_by = created_by;
+        this.area = area;
+        this.population = population;
+        this.establishment_date = establishment_date;
+        this.capital = capital;
+        this.meters_above_sea_level = meters_above_sea_level;
+        this.car_code = car_code;
+        this.climate = climate;
+        this.standardOfLiving = standardOfLiving;
+        this.governor = governor;
+    }
 
     public long getId() {return id;}
     public String getName() {

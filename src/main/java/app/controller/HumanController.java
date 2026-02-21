@@ -3,6 +3,7 @@ package app.controller;
 import app.HibernateUtil;
 import app.appDAO.HumanDAO;
 import app.appentities.Human;
+import app.services.HumanService;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,82 +16,39 @@ import java.util.List;
 public class HumanController {
 
     @Autowired
-    private final HumanDAO humanDAO;
+    private final HumanService humanService;
 
     public HumanController() {
-        this.humanDAO = new HumanDAO();
+        this.humanService = new HumanService();
     }
 
-    // GET ALL OF EM
+    // this catches requests for a list of all of the humans
     @GetMapping
-    public List<Human> getAllCities() {
-        return humanDAO.getAllHumans();
+    public List<Human> getAllHumansRequest() {
+        return humanService.getAllHumans();
     }
 
-    // GET
+    // this catches requests for a human by their ID
     @GetMapping("/{id}")
-    public Human getHumanById(@PathVariable("id") Long id) {
-        Human human = humanDAO.getHumanById(id);
-        if (human == null) {
-            throw new RuntimeException("Human not found with id: " + id);
-        }
-        return human;
+    public Human getHumanByIdRequest(@PathVariable("id") Long id) {
+        return humanService.getHumanById(id);
     }
 
-    // ADD
+    // this catches requests for adding a human
     @PostMapping
-    public Human addHuman(@RequestBody Human human) {
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.save(human);
-            transaction.commit();
-        } catch (Exception e) {
-            throw new RuntimeException("Error saving human: " + e.getMessage());
-        }
-
-        return human;
+    public Human addHumanRequest(@RequestBody Human human) {
+        return humanService.addHuman(human);
     }
 
-    // UPDATE
+    // this catches requests for updating a human by their ID
     @PutMapping("/{id}")
-    public Human updateHuman(@PathVariable("id") Long id, @RequestBody Human updatedHuman) {
-        Human human = humanDAO.getHumanById(id);
-        if (human == null) {
-            throw new RuntimeException("Human not found with id: " + id);
-        }
-
-        human.setName(updatedHuman.getName());
-        human.setAge(updatedHuman.getAge());
-        human.setHeight(updatedHuman.getHeight());
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.update(human);
-            transaction.commit();
-        } catch (Exception e) {
-            throw new RuntimeException("Error updating human: " + e.getMessage());
-        }
-
-        return human;
+    public Human updateHumanRequest(@PathVariable("id") Long id, @RequestBody Human updatedHuman) {
+        return humanService.updateHuman(id, updatedHuman);
     }
 
-    // DELETE
+    // this catches requests for deleting a human by their ID
     @DeleteMapping("/{id}")
-    public String deleteHuman(@PathVariable("id") Long id) {
-        Human human = humanDAO.getHumanById(id);
-        if (human == null) {
-            throw new RuntimeException("Human not found with id: " + id);
-        }
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.delete(human);
-            transaction.commit();
-        } catch (Exception e) {
-            throw new RuntimeException("Error deleting human: " + e.getMessage());
-        }
-
-        return "Human with id " + id + " has been deleted.";
+    public String deleteHumanRequest(@PathVariable("id") Long id) {
+        return humanService.deleteHuman(id);
     }
 }

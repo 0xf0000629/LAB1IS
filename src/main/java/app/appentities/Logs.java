@@ -21,6 +21,18 @@ public class Logs {
     private String action;
     private String nameofentity;
     private String filename;
+    private LocalDateTime log_date;
+
+    public Logs() {
+        // this empty constructor is for JPA to not break
+    }
+    public Logs(String username, String action, String nameofentity, String filename, LocalDateTime log_date){
+        this.username = username;
+        this.action = action;
+        this.nameofentity = nameofentity;
+        this.filename = filename;
+        this.log_date = log_date;
+    }
 
     public LocalDateTime getLog_date() {
         return log_date;
@@ -29,8 +41,6 @@ public class Logs {
     public void setLog_date(LocalDateTime log_date) {
         this.log_date = log_date;
     }
-
-    private LocalDateTime log_date;
 
     public Long getId() {
         return id;

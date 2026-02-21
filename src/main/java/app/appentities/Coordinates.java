@@ -15,6 +15,14 @@ public class Coordinates {
     private Double x; //Значение поля должно быть больше -625, Поле не может быть null
     private Long y; //Поле не может быть null
 
+    public Coordinates() {
+        // this empty constructor is for JPA to not break
+    }
+    public Coordinates(Double x, Long y){
+        this.x = x;
+        this.y = y;
+    }
+
     public Long getId() {
         return id;
     }

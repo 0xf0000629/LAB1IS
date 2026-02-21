@@ -1,9 +1,7 @@
 package app.controller;
 
-import app.MinioService;
+import app.services.MinioService;
 import io.minio.GetObjectArgs;
-import io.minio.MinioClient;
-import io.minio.errors.MinioException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -21,11 +19,11 @@ public class FileController {
     private MinioService minioService;
 
     @GetMapping("/download")
-    public ResponseEntity<InputStreamResource> downloadFile(
+    public ResponseEntity<InputStreamResource> downloadFileRequest(
             @RequestParam("filename") String fileName
     ) {
         try {
-            // Fetch the file from MinIO
+            // this fetches the file from MinIO
             InputStream fileStream = minioService.minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket("files")
@@ -33,7 +31,7 @@ public class FileController {
                             .build()
             );
 
-            // Build the response
+            // this builds the response
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)

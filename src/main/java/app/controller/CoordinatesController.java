@@ -3,6 +3,7 @@ package app.controller;
 import app.HibernateUtil;
 import app.appDAO.CoordinatesDAO;
 import app.appentities.Coordinates;
+import app.services.CoordinatesService;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.web.bind.annotation.*;
@@ -13,81 +14,39 @@ import java.util.List;
 @RequestMapping("/api/coords")
 public class CoordinatesController {
 
-    private final CoordinatesDAO coordsDAO;
+    private final CoordinatesService coordsService;
 
     public CoordinatesController() {
-        this.coordsDAO = new CoordinatesDAO(); // Instantiate the DAO
+        this.coordsService = new CoordinatesService(); // Instantiate the service
     }
 
-    // GET ALL OF EM
+    // this catches requests for a list of all of the coordinates
     @GetMapping
-    public List<Coordinates> getAllCities() {
-        return coordsDAO.getAllCoordinates();
+    public List<Coordinates> getAllCoordinatesRequest() {
+        return coordsService.getAllCoordinates();
     }
 
-    // GET
+    // this catches requests for a pair of coordinates by their ID
     @GetMapping("/{id}")
-    public Coordinates getCoordinatesById(@PathVariable Long id) {
-        Coordinates coords = coordsDAO.getCoordinatesById(id);
-        if (coords == null) {
-            throw new RuntimeException("Coords not found with id: " + id); // Handle this better with proper exception handling
-        }
-        return coords;
+    public Coordinates getCoordinatesByIdRequest(@PathVariable Long id) {
+        return coordsService.getCoordinatesById(id);
     }
 
-    // ADD
+    // this catches requests for adding a pair of coordinates
     @PostMapping
-    public Coordinates addCoordinates(@RequestBody Coordinates coords) {
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.save(coords);
-            transaction.commit();
-        } catch (Exception e) {
-            throw new RuntimeException("Error saving coords: " + e.getMessage());
-        }
-
-        return coords;
+    public Coordinates addCoordinatesRequest(@RequestBody Coordinates coords) {
+        return coordsService.addCoordinates(coords);
     }
 
-    // UPDATE
+    // this catches requests for updating a pair of a coordinates
     @PutMapping("/{id}")
-    public Coordinates updateCoordinates(@PathVariable Long id, @RequestBody Coordinates updatedCoordinates) {
-        Coordinates coords = coordsDAO.getCoordinatesById(id);
-        if (coords == null) {
-            throw new RuntimeException("Coords not found with id: " + id);
-        }
-
-        coords.setX(updatedCoordinates.getX());
-        coords.setY(updatedCoordinates.getY());
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.update(coords);
-            transaction.commit();
-        } catch (Exception e) {
-            throw new RuntimeException("Error updating coords: " + e.getMessage());
-        }
-
-        return coords;
+    public Coordinates updateCoordinatesRequest(@PathVariable Long id, @RequestBody Coordinates updatedCoordinates) {
+        return coordsService.updateCoordinates(id, updatedCoordinates);
     }
 
-    // DELETE
+    // this catches requests for deleting a pair of a coordinates
     @DeleteMapping("/{id}")
-    public String deleteCoordinates(@PathVariable Long id) {
-        Coordinates coords = coordsDAO.getCoordinatesById(id);
-        if (coords == null) {
-            throw new RuntimeException("Coords not found with id: " + id);
-        }
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.delete(coords);
-            transaction.commit();
-        } catch (Exception e) {
-            throw new RuntimeException("Error deleting coords: " + e.getMessage());
-        }
-
-        return "Coords with id " + id + " has been deleted.";
+    public String deleteCoordinatesRequest(@PathVariable Long id) {
+        return coordsService.deleteCoordinates(id);
     }
 }

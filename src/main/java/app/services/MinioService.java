@@ -1,4 +1,4 @@
-package app;
+package app.services;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.BucketExistsArgs;
@@ -25,6 +25,7 @@ public class MinioService {
                 .build();
     }
 
+    // this upload a file to minio from an input stream and names it with fileName
     public void uploadFile(String fileName, InputStream inputStream, long size, String contentType) throws Exception {
         // Ensure the bucket exists, create it if not
         boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
@@ -43,6 +44,7 @@ public class MinioService {
         );
     }
 
+    // this tests if minio is up and running
     public void pingMinio() throws Exception {
         boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder()
                 .bucket(bucketName)

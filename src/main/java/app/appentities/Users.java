@@ -14,6 +14,15 @@ public class Users {
     private String password;
     private boolean cool;
 
+    public Users() {
+        // this empty constructor is for JPA to not break
+    }
+    public Users(String username, String password, boolean cool){
+        this.username = username;
+        this.password = password;
+        this.cool = cool;
+    }
+
     public Long getId() {
         return id;
     }

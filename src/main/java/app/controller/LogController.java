@@ -17,7 +17,7 @@ public class LogController {
         this.logDAO = new LogDAO(); // Instantiate the DAO
     }
 
-    // GET ALL OF EM
+    // this catches requests for a list of logs
     @GetMapping
     public List<Logs> getAllLogs() {
         return logDAO.getAllLogs();

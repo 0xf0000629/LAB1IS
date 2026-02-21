@@ -1,6 +1,5 @@
 package app.appDAO;
 
-import app.controller.CityController;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 import java.util.Collections;
@@ -10,11 +9,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Component
 public class CarCodeEnforcer {
 
-    // Use a thread-safe list for concurrency
+    // CarCodeEnforcer is responsible for the car codes
+    // this is a list of car codes
     private static List<Boolean> carcodes = new CopyOnWriteArrayList<Boolean>(Collections.nCopies(1000, false));
 
+    // this calls CityDAO to reload the car code list for future checks
     @PostConstruct
-    public static void runitback(){
+    public static void callForCodeReload(){
         CityDAO.reloadCarCodes();
         System.out.println("CAR CODES RELOADED");
     }

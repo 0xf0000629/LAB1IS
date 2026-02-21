@@ -21,6 +21,16 @@ public class Human {
 
     private String added_by;
 
+    public Human() {
+        // this empty constructor is for JPA to not break
+    }
+    public Human(String name, long age, int height, String added_by){
+        this.name = name;
+        this.age = age;
+        this.height = height;
+        this.added_by = added_by;
+    }
+
     public Long getId() {
         return id;
     }
